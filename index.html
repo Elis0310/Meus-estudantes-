@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Estudantes</title>
+  <style>
+    :root {
+      --primary: #1e293b;
+      --accent: #3b82f6;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+    body {
+      background-color: var(--bg);
+      margin: 0;
+      padding-bottom: 40px;
+    }
+
+    /* Cabeçalho Fixo */
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 15px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
+
+    .btn-save {
+      background: var(--success);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 10px;
+    }
+
+    .table-wrapper {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px; /* Garante que não esmague no celular */
+    }
+
+    th {
+      background: #f1f5f9;
+      color: #64748b;
+      font-size: 0.75rem;
+      padding: 12px;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+    }
+
+    td {
+      border-bottom: 1px solid var(--border);
+      padding: 0;
+    }
+
+    tr:nth-child(even) { background: #fafafa; }
+
+    input {
+      width: 100%;
+      border: none;
+      padding: 15px 10px;
+      font-size: 0.95rem;
+      background: transparent;
+      outline: none;
+      color: #334155;
+    }
+
+    input:focus { background: #f0f7ff; }
+
+    .col-nome input { font-weight: bold; color: #1e40af; }
+    .col-obs { min-width: 300px; }
+
+    .footer-tools {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .btn-clear {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    /* Estilo para avisar que salvou */
+    #status-msg {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>📋 Meus Estudantes</h1>
+    <button class="btn-save" onclick="salvar()">SALVAR</button>
+  </header>
+
+  <div class="container">
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th width="100">DATA</th>
+            <th width="200">NOME</th>
+            <th width="150">PUBLICAÇÃO</th>
+            <th width="80">LIÇÃO</th>
+            <th class="col-obs">PESQUISA / OBSERVAÇÃO</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaBody">
+          </tbody>
+      </table>
+    </div>
+
+    <div class="footer-tools">
+      <button class="btn-clear" onclick="limpar()">Reiniciar tabela para nova semana</button>
+    </div>
+  </div>
+
+  <div id="status-msg">Dados salvos!</div>
+
+  <script>
+    const body = document.getElementById('tabelaBody');
+    const nomesPadrao = ["Cássia", "Júlia", "", "", "", "", "", "", "", ""];
+    const pubsPadrao = ["Seja feliz", "Seja feliz", "", "", "", "", "", "", "", ""];
+
+    // Cria 10 linhas
+    for(let i=0; i<10; i++) {
+      const row = `
+        <tr>
+          <td><input type="text" placeholder="00/00"></td>
+          <td class="col-nome"><input type="text" value="${nomesPadrao[i]}"></td>
+          <td><input type="text" value="${pubsPadrao[i]}"></td>
+          <td><input type="text" style="text-align:center"></td>
+          <td class="col-obs"><input type="text" placeholder="..."></td>
+        </tr>
+      `;
+      body.innerHTML += row;
+    }
+
+    function salvar() {
+      const inputs = document.querySelectorAll('input');
+      const dados = Array.from(inputs).map(i => i.value);
+      localStorage.setItem('dados_estudantes_final', JSON.stringify(dados));
+      
+      const msg = document.getElementById('status-msg');
+      msg.style.display = 'block';
+      setTimeout(() => { msg.style.display = 'none'; }, 2000);
+    }
+
+    function carregar() {
+      const salvos = JSON.parse(localStorage.getItem('dados_estudantes_final'));
+      if(salvos) {
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach((input, index) => {
+          if(salvos[index] !== undefined) input.value = salvos[index];
+        });
+      }
+    }
+
+    function limpar() {
+      if(confirm("Deseja limpar todos os dados?")) {
+        localStorage.removeItem('dados_estudantes_final');
+        location.reload();
+      }
+    }
+
+    window.onload = carregar;
+    
+    // Salva automaticamente ao sair do campo (opcional)
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('blur', salvar);
+    });
+  </script>
+</body>
+</html>
